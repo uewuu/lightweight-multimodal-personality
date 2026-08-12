@@ -1,0 +1,34 @@
+{
+  "fit_split": "validation",
+  "fit_samples": 1999,
+  "test_samples": 1999,
+  "method": "ordinary least squares, independently per trait",
+  "formula": "clip(a_t * raw_prediction_t + b_t, 0, 1)",
+  "clip_range": [
+    0.0,
+    1.0
+  ],
+  "parameters": {
+    "O": {
+      "slope_a": 0.8699290621966486,
+      "intercept_b": 0.07171514569296279
+    },
+    "C": {
+      "slope_a": 0.9558134465535721,
+      "intercept_b": 0.02491287524817821
+    },
+    "E": {
+      "slope_a": 0.8953165626245752,
+      "intercept_b": 0.04893793726562283
+    },
+    "A": {
+      "slope_a": 0.8561136748934014,
+      "intercept_b": 0.08638846327031266
+    },
+    "N": {
+      "slope_a": 0.8726912682307182,
+      "intercept_b": 0.06527240156626098
+    }
+  },
+  "test_labels_used_for_parameter_fitting": false
+}

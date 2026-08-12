@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environments / editors
+.venv/
+venv/
+env/
+.env
+*.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# FI data and pre-extracted features
+data/
+datas/
+datasets/
+features/
+*.pkl
+
+# Model weights / large artifacts
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.bin
+
+# Training / evaluation outputs
+results/
+lightning_logs/
+wandb/
+benchmark_results/
+dcs_results/
+csv_logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+cache/
+.ipynb_checkpoints/

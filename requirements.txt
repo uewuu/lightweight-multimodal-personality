@@ -1,0 +1,8 @@
+# Dependencies.
+# The paper efficiency benchmark used PyTorch 2.5.1+cu118 / CUDA 11.8.
+# Install the PyTorch build appropriate for your CUDA platform when needed.
+torch>=2.5,<2.6
+lightning>=2.4,<3.0
+numpy>=1.26,<3.0
+pandas>=2.0,<3.0
+PyYAML>=6.0,<7.0

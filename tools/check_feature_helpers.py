@@ -9,8 +9,11 @@ from __future__ import annotations
 import torch
 
 from fi import pad_or_crop_time_dim, standardization
-from exordium.utils.normalize import standardization as original_standardization
-from exordium.utils.padding import pad_or_crop_time_dim as original_pad_or_crop
+try:
+    from exordium.utils.normalize import standardization as original_standardization
+    from exordium.utils.padding import pad_or_crop_time_dim as original_pad_or_crop
+except ImportError as exc:
+    raise SystemExit("Install requirements.txt before running this helper audit.") from exc
 
 
 def main() -> None:

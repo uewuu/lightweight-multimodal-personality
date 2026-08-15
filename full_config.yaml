@@ -1,0 +1,98 @@
+# Minimal public configuration for the formal seed-42 Full model.
+# It keeps only fields that affect the locked Full architecture/training path.
+# Dataset/checkpoint paths and test-only fields from the archived run are omitted.
+
+# Inputs
+feature_list:
+  - dinov2_face
+  - wavlm
+  - roberta
+  - egemaps_lld
+input_feature_dim: [384, 768, 1024, 25]
+output_dim: [5]
+
+# LinMulT backbone
+attention_type: linear
+d_model: 32
+n_layers: 5
+n_heads: 8
+time_dim_reducer: gap
+dropout_input: 0.0
+dropout_output: 0.2
+dropout_qkv: 0.0
+dropout_relu: 0.2
+dropout_residual: 0.2
+
+# MTF + BRST
+trait_head_input_dim: 384
+modality_token_fusion_layers: 1
+modality_token_fusion_heads: 4
+modality_token_fusion_dropout: 0.1
+modality_token_fusion_ffn_ratio: 2.0
+behavior_state_hidden_ratio: 1.0
+behavior_state_dropout: 0.1
+behavior_state_gate_alpha: 0.2
+
+# Full TCMS
+# Uses q_(b,t) = q_t + W_g h_b before attention over four MTF modality tokens.
+tcms_dropout: 0.1
+
+# Trait-specific residual prediction
+trait_head_hidden_dim: 32
+trait_head_dropout: 0.1
+trait_loss_alpha_a: 1.5
+agreeableness_index: 3
+trait_residual_scale_init: 1.0
+label_mean:
+  - 0.5663275718688965
+  - 0.5227726697921753
+  - 0.47617265582084656
+  - 0.5482338070869446
+  - 0.5203418135643005
+
+# Main regression regularization
+lambda_extreme: 0.05
+extreme_weight_strength: 1.0
+lambda_var: 0.005
+
+# Agreeableness-aware CL
+lambda_agreeableness_cl: 0.05
+agreeableness_top_k: 3
+agreeableness_temperature: 0.2
+agreeableness_label_sigma: 0.08
+
+# BRST-guided B-ARCL
+lambda_behavior_aware_cl: 0.03
+behavior_cl_top_k: 3
+behavior_cl_temperature: 0.2
+behavior_cl_label_sigma: 0.08
+behavior_cl_behavior_sigma: 0.5
+behavior_cl_behavior_weight_alpha: 0.5
+regression_cl_trait_weights: [1.0, 1.1, 1.0, 1.5, 1.2]
+
+# Training schedule
+seed: 42
+sample_seed: 42
+batch_size: 8
+num_workers: 4
+n_epochs: 100
+pretrain_epochs: 5
+cl_start_epoch: 5
+cl_warmup_epochs: 5
+adversarial_start_epoch: 10
+feat_eps: 0.005
+float32_matmul_precision: medium
+gradient_clip_val: 1.0
+
+optimizer:
+  name: adam
+  base_lr: 0.0007
+  weight_decay: 0.0
+lr_scheduler:
+  name: OneCycleLR
+
+early_stopping:
+  monitor: valid_r2
+  patience: 20
+  mode: max
+checkpoint_monitor: valid_r2

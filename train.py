@@ -195,6 +195,7 @@ class StudentTrainingModule(L.LightningModule):
         self.train_targets: list[torch.Tensor] = []
         self.valid_predictions: list[torch.Tensor] = []
         self.valid_targets: list[torch.Tensor] = []
+        self.valid_sample_ids: list[str] = []
         self.test_predictions: list[torch.Tensor] = []
         self.test_targets: list[torch.Tensor] = []
         self.test_sample_ids: list[str] = []
@@ -503,6 +504,7 @@ class StudentTrainingModule(L.LightningModule):
         )
         self.valid_predictions.append(prediction.detach())
         self.valid_targets.append(target.detach())
+        self.valid_sample_ids.extend(str(x) for x in batch["sample_id"])
 
     def on_validation_epoch_end(self) -> None:
         if not self.valid_predictions:
@@ -512,8 +514,24 @@ class StudentTrainingModule(L.LightningModule):
         metrics = calculate_metrics(predictions, targets)
         self.log("valid_racc", metrics["racc"], prog_bar=True)
         self.log("valid_r2", metrics["r2"], prog_bar=True)
+
+        # Export only during the final selected-checkpoint pass.
+        if bool(self.config.get("export_validation_predictions", False)):
+            output_dir = Path(self.config.get("experiment_dir", "results"))
+            output_dir.mkdir(parents=True, exist_ok=True)
+            payload: dict[str, Any] = {"sample_id": self.valid_sample_ids}
+            for index, trait in enumerate(TRAITS):
+                payload[f"pred_{trait}"] = np.clip(predictions[:, index], 0.0, 1.0)
+                payload[f"target_{trait}"] = targets[:, index]
+            pd.DataFrame(payload).to_csv(
+                output_dir / "valid_predictions.csv", index=False, encoding="utf-8-sig"
+            )
+            with (output_dir / "valid_metrics.json").open("w", encoding="utf-8") as stream:
+                json.dump(metrics, stream, ensure_ascii=False, indent=2)
+
         self.valid_predictions.clear()
         self.valid_targets.clear()
+        self.valid_sample_ids.clear()
 
     def test_step(self, batch: dict[str, Any], batch_idx: int) -> None:
         features = [batch[name] for name in self.feature_list]
@@ -636,12 +654,15 @@ def run(config: dict[str, Any], test_only_checkpoint: Path | None = None) -> Non
     else:
         checkpoint_path = test_only_checkpoint
 
-    print(f"[FinalSelection] testing validation-RACC checkpoint: {checkpoint_path}")
+    print(f"[FinalSelection] evaluating validation-RACC checkpoint: {checkpoint_path}")
+    final_config = dict(config)
+    final_config["export_validation_predictions"] = True
     module = StudentTrainingModule.load_from_checkpoint(
         checkpoint_path=str(checkpoint_path),
-        config=config,
+        config=final_config,
         map_location="cpu",
     )
+    trainer.validate(module, datamodule=data_module)
     trainer.test(module, datamodule=data_module)
 
 

@@ -197,17 +197,31 @@ class FiDataset(Dataset):
     def _load_standardization_params(self):
         d = {}
 
-        egemaps_data = np.load(self.db_root / "standardization" / "egemaps_lld.npz")
-        d["egemaps_lld"] = {
-            "mean": torch.FloatTensor(egemaps_data["mean"]),
-            "std": torch.FloatTensor(egemaps_data["std"]),
-        }
+        # Load statistics only for modalities requested by the active config.
+        # The paper's four-stream model uses eGeMAPS but not OpenGraphAU.
+        if "egemaps_lld" in self.feature_list:
+            egemaps_path = self.db_root / "standardization" / "egemaps_lld.npz"
+            if not egemaps_path.is_file():
+                raise FileNotFoundError(
+                    f"Missing eGeMAPS standardization statistics: {egemaps_path}"
+                )
+            egemaps_data = np.load(egemaps_path)
+            d["egemaps_lld"] = {
+                "mean": torch.FloatTensor(egemaps_data["mean"]),
+                "std": torch.FloatTensor(egemaps_data["std"]),
+            }
 
-        au_data = np.load(self.db_root / "standardization" / "opengraphau.npz")
-        d["opengraphau"] = {
-            "mean": torch.FloatTensor(au_data["mean"]),
-            "std": torch.FloatTensor(au_data["std"]),
-        }
+        if "opengraphau" in self.feature_list:
+            au_path = self.db_root / "standardization" / "opengraphau.npz"
+            if not au_path.is_file():
+                raise FileNotFoundError(
+                    f"Missing OpenGraphAU standardization statistics: {au_path}"
+                )
+            au_data = np.load(au_path)
+            d["opengraphau"] = {
+                "mean": torch.FloatTensor(au_data["mean"]),
+                "std": torch.FloatTensor(au_data["std"]),
+            }
 
         return d
 

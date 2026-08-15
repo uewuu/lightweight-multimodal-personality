@@ -1,65 +1,35 @@
-# Efficient Multimodal Apparent Personality Recognition
+# High-Capacity and Lightweight Multimodal Learning for Apparent Personality Recognition
 
-Code for the lightweight multimodal personality recognition model described in:
+Minimal public code release for the paper:
 
-**Efficient Multimodal Apparent Personality Recognition with Trait-Interactive Fusion and Validation-Fitted Calibration**
+**High-Capacity and Lightweight Multimodal Learning for Apparent Personality Recognition via Trait-Conditioned Routing and Distillation–Calibration**
 
-The repository covers the **fusion-and-regression stage** and assumes that modality features have already been extracted.
+This repository covers the downstream **fusion-and-regression stage** and assumes DINOv2-face, WavLM, RoBERTa, and eGeMAPS representations are pre-extracted.
 
-## Model
+## Included methods
 
-Four modality representations are used:
+- **Full**: LinMulT -> Modality Token Fusion (MTF) with Behavior-Reliability Summary Token (BRST) -> trait-conditioned modality selection (TCMS) -> trait-specific residual regression. B-ARCL and Agreeableness-aware contrastive learning are training-only objectives.
+- **D-DCS**: mask-aware pooling -> 96-D modality projections -> Projected Concat+MLP -> Trait-Interactive TCMS-Lite -> trait-specific residual regression. Prediction KD is training-only; validation-fitted trait-wise affine calibration completes DCS.
 
-| Modality | Representation | Dim. |
-|---|---|---:|
-| Visual | DINOv2-face | 384 |
-| Speech | WavLM | 768 |
-| Text | RoBERTa | 1024 |
-| Acoustic descriptors | eGeMAPS LLD | 25 |
+DCS uses `y'_t = clip(a_t * y_t + b_t, 0, 1)`, fitted independently for the five OCEAN traits on validation predictions only.
 
-The student architecture is:
+## Paper results (seed 42)
 
-```text
-modality sequences
-    -> mask-aware temporal pooling
-    -> modality-specific 96-d projections
-    -> projected concat + MLP
-    -> Trait-Interactive TCMS-Lite
-    -> trait-specific regression heads
-    -> O/C/E/A/N predictions
-```
+| System | Neural params | Fixed affine scalars | Avg. RACC | Avg. R² | Avg. PCC |
+|---|---:|---:|---:|---:|---:|
+| Full | 5,476,680 | 0 | 0.916474 | 0.485587 | 0.697162 |
+| Raw Student | 500,107 | 0 | 0.916190 | 0.481810 | 0.695661 |
+| D-DCS | 500,107 | 10 | 0.916363 | 0.485638 | 0.695661 |
 
-Trait-Interactive TCMS-Lite performs sample- and trait-conditioned modality routing. Training uses offline Prediction KD together with the regression and regularization terms described in the paper.
-
-D-DCS applies one validation-fitted affine transformation to each trait:
-
-```text
-y'_t = clip(a_t * y_t + b_t, 0, 1)
-```
-
-The ten calibration scalars are fitted on validation predictions and then fixed for test and deployment inference.
-
-## Results
-
-Seed-42 results reported in the paper:
-
-| System | Fusion/regression params | Fixed calibration scalars | Avg. RACC | Avg. R² |
-|---|---:|---:|---:|---:|
-| Full Teacher | 5,476,680 | 0 | 0.916474 | 0.485587 |
-| Raw Student | 500,107 | 0 | 0.916190 | 0.481810 |
-| D-DCS | 500,107 | 10 | 0.916363 | 0.485638 |
-
-Parameter counts refer to the fusion-and-regression network. Pretrained feature extractors are not included.
-
-Efficiency measurements were obtained on an NVIDIA RTX A4000 with FP32 inputs. Pre-extracted features were already on the GPU, and feature extraction/data loading were excluded from timing.
+Feature-level efficiency (RTX A4000, FP32; pre-extracted representations already on GPU):
 
 | System | Batch-1 latency (ms) | Batch-8 throughput (samples/s) | Peak GPU memory, B=8 (MiB) |
 |---|---:|---:|---:|
-| Full Teacher | 92.285 ± 1.328 | 81.51 ± 0.66 | 245.964 |
+| Full | 92.285 ± 1.328 | 81.51 ± 0.66 | 245.964 |
 | Raw Student | 1.885 ± 0.098 | 4,254.93 ± 33.04 | 54.383 |
 | D-DCS | 1.952 ± 0.076 | 4,099.77 ± 84.82 | 54.384 |
 
-`benchmark.py` measures Raw Student and D-DCS. The Full Teacher numbers above are included for reference.
+D-DCS therefore provides 10.95x neural compression and a 47.29x batch-1 feature-level speed-up relative to Full. Upstream feature extraction and data loading are excluded from this timing boundary.
 
 ## Files
 
@@ -68,13 +38,15 @@ Efficiency measurements were obtained on an NVIDIA RTX A4000 with FP32 inputs. P
 ├── README.md
 ├── LICENSE
 ├── requirements.txt
+├── fi.py
 ├── model.py
 ├── train.py
-├── fi.py
-├── dcs.py
-├── benchmark.py
 ├── config.yaml
+├── dcs.py
 ├── calibration_parameters.json
+├── full_model.py
+├── full_config.yaml
+├── benchmark.py
 └── tools/
     └── check_feature_helpers.py
 ```
@@ -88,13 +60,11 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-For GPU runs, install the PyTorch build that matches the local CUDA environment. The efficiency measurements in the paper used PyTorch 2.5.1+cu118 and CUDA 11.8.
+`linmult==1.5.2` is the external LinMulT dependency. `exordium` supplies the FI normalization/padding helpers. Install the PyTorch build appropriate for the local CUDA environment when using a GPU.
 
 ## Data layout
 
-The ChaLearn First Impressions dataset and extracted features are not included.
-
-Expected layout:
+FIv2 and pre-extracted features are not redistributed. Expected layout:
 
 ```text
 data/fi_features/
@@ -106,92 +76,77 @@ data/fi_features/
     └── egemaps_lld.npz
 ```
 
-Each sample should contain:
-
-```python
-{
-    "dinov2_face": ...,   # [T, 384]
-    "wavlm": ...,         # [T, 768]
-    "roberta": ...,       # [T, 1024]
-    "egemaps_lld": ...,   # [T, 25]
-    "ocean": ...,         # [5], O/C/E/A/N
-}
-```
-
-The loader also supports `cache/fi_train.pkl`, `cache/fi_valid.pkl`, and `cache/fi_test.pkl`.
+Each sample contains `dinov2_face [T,384]`, `wavlm [T,768]`, `roberta [T,1024]`, `egemaps_lld [T,25]`, and `ocean [5]`. OpenGraphAU statistics are loaded only when OpenGraphAU is explicitly requested; they are not needed for the paper's four-stream configuration.
 
 ## Prediction KD
 
-Offline teacher predictions are stored in an NPZ file containing:
+Offline teacher predictions are an NPZ with `sample_ids` and `predictions` (`[N,5]`, O/C/E/A/N). The teacher is not used by the deployed student.
 
-```text
-sample_ids
-predictions
-```
-
-`predictions` must have shape `[N, 5]` in O/C/E/A/N order.
-
-The default path in `config.yaml` is:
-
-```text
-./data/teacher_predictions/full_teacher_train_predictions.npz
-```
-
-The Teacher is required only to generate the distillation targets; it is not used by the deployed student.
-
-## Training
+## Train / evaluate the student
 
 ```bash
-python train.py   --config config.yaml   --db-root ./data/fi_features   --teacher-predictions ./data/teacher_predictions/full_teacher_train_predictions.npz
+python train.py --config config.yaml --db-root ./data/fi_features --teacher-predictions ./data/teacher_predictions/full_teacher_train_predictions.npz
 ```
 
-Training saves validation-RACC and validation-R² checkpoints. Early stopping monitors validation R², while final model selection uses validation RACC.
-
-Evaluate a saved checkpoint with:
+Evaluate an existing selected checkpoint:
 
 ```bash
-python train.py   --config config.yaml   --db-root ./data/fi_features   --checkpoint ./checkpoints/checkpoint_valid_racc.ckpt
+python train.py --config config.yaml --db-root ./data/fi_features --checkpoint ./checkpoints/checkpoint_valid_racc.ckpt
 ```
+
+The selected-checkpoint evaluation writes both `valid_predictions.csv` and `test_predictions.csv`. Early stopping monitors validation R²; the reported final student uses the validation-RACC checkpoint.
 
 ## D-DCS
 
-Apply the supplied seed-42 calibration parameters:
+Apply the supplied fixed seed-42 parameters:
 
 ```bash
-python dcs.py apply   --input-csv raw_predictions.csv   --parameters calibration_parameters.json   --output-csv calibrated_predictions.csv
+python dcs.py apply --input-csv raw_predictions.csv --parameters calibration_parameters.json --output-csv calibrated_predictions.csv
 ```
 
-For a newly trained student, refit D-DCS using that model's validation predictions:
+Refit on a newly trained student's validation predictions:
 
 ```bash
-python dcs.py fit   --valid-csv valid_predictions.csv   --test-csv test_predictions.csv   --output-dir dcs_results
+python dcs.py fit --valid-csv ./results/trait_interactive_tcms_predkd/valid_predictions.csv --test-csv ./results/trait_interactive_tcms_predkd/test_predictions.csv --output-dir dcs_results
 ```
 
-The fitting routine estimates all calibration parameters from the validation split before loading the test file for evaluation.
+All affine parameters are fitted from validation only; test labels are not used for fitting.
+
+## Full model
+
+`full_model.py` is the minimal public implementation of the locked Full path. Historical ablation branches and experiment-management plumbing are omitted. The LinMulT backbone remains an external dependency, while the hidden-state interface used by the formal Full run is included in `full_model.py`.
+
+Parameter check:
+
+```bash
+python -c "import yaml; from full_model import FullModel, assert_full_parameter_count; c=yaml.safe_load(open('full_config.yaml', encoding='utf-8')); m=FullModel(c); print(assert_full_parameter_count(m))"
+```
+
+Expected output: `5476680`.
 
 ## Efficiency benchmark
 
+The benchmark measures Full, Raw Student, and D-DCS under the same feature-level timing boundary:
+
 ```bash
-python benchmark.py   --config config.yaml   --checkpoint ./checkpoints/checkpoint_valid_racc.ckpt   --calibration-parameters calibration_parameters.json   --device cuda:0
+python benchmark.py --config config.yaml --full-config full_config.yaml --checkpoint ./checkpoints/checkpoint_valid_racc.ckpt --full-checkpoint ./checkpoints/full_checkpoint_valid_r2.ckpt --calibration-parameters calibration_parameters.json --device cuda:0
 ```
 
-Default settings match the paper protocol for Raw Student and D-DCS: batch sizes 1 and 8, 50 warm-up iterations, 200 timed iterations per repeat, and 3 repeats.
-
-A CPU smoke test can be run with:
+If a checkpoint is omitted, that architecture uses deterministic random weights for a functional/timing smoke test only. CPU smoke test:
 
 ```bash
 python benchmark.py --allow-cpu --warmup 2 --iterations 5 --repeats 1
 ```
 
-Without a checkpoint, the benchmark uses deterministic random weights for a functional timing check; those values should not be compared with the paper results.
+Default benchmark settings are batch sizes 1/8, 50 warm-up iterations, 200 timed iterations per repeat, and 3 repeats.
 
 ## Notes
 
-- Student trainable parameters: **500,107**.
-- D-DCS adds **10 fixed non-trainable scalars**.
-- Compression results refer to the fusion-and-regression stage rather than raw-media feature extraction.
-- `calibration_parameters.json` contains the validation-fitted parameters for the reported seed-42 model.
-- `tools/check_feature_helpers.py` can be used to compare local normalization/padding behavior with `exordium`.
+- Final student: **500,107** trainable neural parameters.
+- Full: **5,476,680** trainable neural parameters.
+- D-DCS adds **10 fixed non-trainable affine scalars**.
+- `calibration_parameters.json` contains the reported seed-42 validation-fitted parameters.
+- FIv2, pre-extracted features, checkpoints, and offline teacher prediction targets are not redistributed.
 
 ## Citation
 

@@ -24,8 +24,7 @@ datasets/
 features/
 *.pkl
 
-# Model weights / large artifacts
-checkpoints/
+# Model weights / large artifacts (not redistributed in the public release)
 *.ckpt
 *.pt
 *.pth
@@ -45,3 +44,8 @@ tmp/
 temp/
 cache/
 .ipynb_checkpoints/
+
+# Local authorized labels / private evaluation material
+local_private/
+*_labels.csv
+

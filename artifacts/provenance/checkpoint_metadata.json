@@ -1,0 +1,42 @@
+{
+  "full_seed42": {
+    "sha256": "7771bf086cf6e740e89bea7ad83af164e00df3fc777104659ae6539edbe8edc5",
+    "bytes": 22467981,
+    "formal_source_run": "results/FI/20260610-234450",
+    "formal_endpoint": "checkpoint_valid_r2.ckpt",
+    "expected_filename": "full_seed42_checkpoint_valid_r2.ckpt",
+    "neural_parameters": 5476680,
+    "distributed_in_public_release": false,
+    "redistribution_note": "Binary checkpoint intentionally omitted from the public GitHub release; SHA-256 retained for provenance."
+  },
+  "student_dkd_seed42": {
+    "sha256": "7f34cfe4ab8d4961eaea0ccaa2c1239670a5c57ad152025c648d664f6e655346",
+    "bytes": 2033552,
+    "formal_source_run": "results/FI/20260727-234040",
+    "formal_endpoint": "checkpoint_valid_racc.ckpt",
+    "expected_filename": "student_dkd_seed42_checkpoint_valid_racc.ckpt",
+    "neural_parameters": 500107,
+    "distributed_in_public_release": false,
+    "redistribution_note": "Binary checkpoint intentionally omitted from the public GitHub release; SHA-256 retained for provenance."
+  },
+  "ablation_F_seed42": {
+    "sha256": "d41315fd8b3297cc10822d599a3438dd7beab8ba27166cb20f4e0851254bb48a",
+    "bytes": 2033680,
+    "formal_source_run": "results/FI/20260803-185203",
+    "formal_endpoint": "checkpoint_valid_racc.ckpt",
+    "expected_filename": "ablation_F_seed42_checkpoint_valid_racc.ckpt",
+    "neural_parameters": 500107,
+    "distributed_in_public_release": false,
+    "redistribution_note": "Binary checkpoint intentionally omitted from the public GitHub release; SHA-256 retained for provenance."
+  },
+  "generic_joint_seed42": {
+    "sha256": "ecac4d7ede8f9c78e28be3dc2349d81f4a19b849653f7dfcca81e79c77716cce",
+    "bytes": 2036496,
+    "formal_source_run": "results/FI/20260816-112144",
+    "formal_endpoint": "checkpoint_valid_racc.ckpt",
+    "expected_filename": "generic_joint_seed42_checkpoint_valid_racc.ckpt",
+    "neural_parameters": 500875,
+    "distributed_in_public_release": false,
+    "redistribution_note": "Binary checkpoint intentionally omitted from the public GitHub release; SHA-256 retained for provenance."
+  }
+}

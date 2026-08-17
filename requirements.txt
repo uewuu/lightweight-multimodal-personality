@@ -1,12 +1,12 @@
-# Core dependencies for the public paper code.
-# The paper efficiency benchmark used PyTorch 2.5.1+cu118 / CUDA 11.8.
-# Install the PyTorch build appropriate for your CUDA platform when needed.
+# Minimal runtime dependencies for the released downstream code.
+# For a fuller reference snapshot see environment/.
 torch>=2.5,<2.6
 lightning>=2.4,<3.0
-numpy>=1.26,<3.0
+numpy>=1.26,<2.0
 pandas>=2.0,<3.0
 PyYAML>=6.0,<7.0
+scikit-learn>=1.4,<2.0
 
-# External research dependencies used by the formal implementation.
-linmult==1.5.2
-exordium>=2.0,<3.0
+# External research dependencies used by the implementation.
+linmult>=1.5,<1.6
+exordium>=1.4,<2.0

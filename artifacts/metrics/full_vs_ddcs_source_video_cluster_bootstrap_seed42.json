@@ -1,0 +1,37 @@
+{
+  "iterations": 10000,
+  "seed": 42,
+  "samples": 1999,
+  "source_video_clusters": 1454,
+  "ci_method": "percentile 95%",
+  "metrics": {
+    "mae_improvement_baseline_minus_candidate": {
+      "point": -0.00011085799160287513,
+      "ci95": [
+        -0.0012503635866210488,
+        0.0010639233098842737
+      ]
+    },
+    "racc_candidate_minus_baseline": {
+      "point": -0.00011085799160281962,
+      "ci95": [
+        -0.0012503635866211616,
+        0.0010639233098842348
+      ]
+    },
+    "r2_candidate_minus_baseline": {
+      "point": 5.138069848226179e-05,
+      "ci95": [
+        -0.013042151102161332,
+        0.013946444680278643
+      ]
+    },
+    "pcc_candidate_minus_baseline": {
+      "point": -0.0015011369231892058,
+      "ci95": [
+        -0.0106533490438498,
+        0.007965397337021984
+      ]
+    }
+  }
+}

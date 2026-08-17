@@ -1,5 +1,5 @@
 db_root: ./data/fi_features
-teacher_predictions_path: ./artifacts/teacher_predictions/full_teacher_train_predictions_seed42.npz
+teacher_predictions_path: ''
 feature_list:
 - dinov2_face
 - wavlm
@@ -52,8 +52,8 @@ cl_warmup_epochs: 5
 adversarial_start_epoch: 10
 feat_eps: 0.005
 pretrain_epochs: 5
-use_prediction_kd: true
-lambda_prediction_kd: 0.2
+use_prediction_kd: false
+lambda_prediction_kd: 0.0
 kd_start_epoch: 0
 kd_warmup_epochs: 5
 kd_smooth_l1_beta: 1.0
@@ -74,5 +74,5 @@ devices:
 - 0
 float32_matmul_precision: medium
 output_dir: ./results
-run_name: trait_interactive_tcms_predkd
+run_name: ablation_F_seed42
 concat_tcms_interaction_mode: multiplicative

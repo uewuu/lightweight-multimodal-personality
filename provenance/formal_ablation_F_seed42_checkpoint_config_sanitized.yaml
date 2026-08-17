@@ -1,0 +1,206 @@
+db_root: <REDACTED_LOCAL_PATH>
+feature_list:
+- dinov2_face
+- wavlm
+- roberta
+- egemaps_lld
+accelerator: gpu
+adversarial_start_epoch: 10
+agree_cl_use_clean_adv_pair: false
+agree_extreme_weight_strength: 2.0
+agree_rank_margin: 0.02
+agree_rank_min_delta: 0.03
+agreeableness_index: 3
+agreeableness_label_sigma: 0.08
+agreeableness_temperature: 0.2
+agreeableness_top_k: 3
+attention_type: linear
+batch_size: 8
+behavior_cl_behavior_sigma: 0.5
+behavior_cl_behavior_weight_alpha: 0.5
+behavior_cl_label_sigma: 0.08
+behavior_cl_replace_regression_cl: true
+behavior_cl_temperature: 0.2
+behavior_cl_top_k: 3
+behavior_cl_use_clean_adv_pair: true
+behavior_state_dropout: 0.1
+behavior_state_gate: true
+behavior_state_gate_alpha: 0.2
+behavior_state_hidden_ratio: 1.0
+behavior_state_use_stats: true
+checkpoints:
+- mode: min
+  monitor: valid_loss
+  name: checkpoint_valid_loss
+- mode: max
+  monitor: valid_racc
+  name: checkpoint_valid_racc
+- mode: max
+  monitor: valid_r2
+  name: checkpoint_valid_r2
+cl_start_epoch: 5
+cl_warmup_epochs: 5
+concat_dropout: 0.1
+concat_hidden_dim: 384
+concat_projection_dim: 96
+concat_tcms_lite_dim: 96
+concat_tcms_lite_dropout: 0.1
+concat_tcms_lite_learnable_alpha: true
+concat_tcms_lite_residual_alpha: 0.2
+d_model: 32
+devices:
+- 0
+dropout_input: 0.0
+dropout_output: 0.2
+dropout_qkv: 0.0
+dropout_relu: 0.2
+dropout_residual: 0.2
+early_stopping:
+  monitor: valid_r2
+  patience: 20
+  mode: max
+enable_recovery: false
+extreme_weight_strength: 1.0
+feat_eps: 0.005
+ffn_fusion: true
+float32_matmul_precision: medium
+input_feature_dim:
+- 384
+- 768
+- 1024
+- 25
+label_mean:
+- 0.5663275718688965
+- 0.5227726697921753
+- 0.47617265582084656
+- 0.5482338070869446
+- 0.5203418135643005
+lambda_agree_extreme: 0.0
+lambda_agree_rank: 0.0
+lambda_agree_var: 0.0
+lambda_agreeableness_cl: 0.05
+lambda_agreeableness_cl_recovery: 0.02
+lambda_behavior_aware_cl: 0.0
+lambda_behavior_aware_cl_recovery: 0.0
+lambda_extreme: 0.05
+lambda_regression_cl: 0.0
+lambda_regression_cl_recovery: 0.0
+lambda_var: 0.005
+lr_scheduler:
+  name: OneCycleLR
+modality_token_fusion_dropout: 0.1
+modality_token_fusion_ffn_ratio: 2.0
+modality_token_fusion_heads: 4
+modality_token_fusion_layers: 1
+modality_token_fusion_residual: false
+model_name: ProjectedConcatMLP_TraitInteractiveTCMSLite_NoKD_Full_AblationF
+n_epochs: 100
+n_heads: 8
+n_layers: 5
+num_workers: 2
+optimizer:
+  base_lr: 0.0007
+  name: adam
+  weight_decay: 0.0
+output_dim:
+- 5
+output_dir: results/FI
+pmtr_dropout: 0.1
+pmtr_ffn_ratio: 2.0
+pmtr_gate: true
+pmtr_heads: 4
+pmtr_layers: 1
+pretrain_epochs: 5
+regression_cl_label_sigma: 0.08
+regression_cl_temperature: 0.2
+regression_cl_top_k: 3
+regression_cl_trait_weights:
+- 1.0
+- 1.1
+- 1.0
+- 1.5
+- 1.2
+regression_cl_use_clean_adv_pair: true
+sample_seed: 42
+seed: 42
+tasks:
+  app:
+    loss_fn: bell_l2_l1_loss
+    metrics:
+    - racc
+    - r2
+    type: regression
+tcms_dropout: 0.1
+tcms_use_global_context: true
+test_checkpoint_monitor: valid_r2
+time_dim_reducer: gap
+trait_fusion_dropout: 0.1
+trait_fusion_hidden_dim: 128
+trait_head_dropout: 0.1
+trait_head_hidden_dim: 32
+trait_head_input_dim: 384
+trait_head_use_sigmoid: false
+trait_loss_alpha_a: 1.5
+trait_query_mtf_dropout: 0.1
+trait_query_mtf_ffn_ratio: 2.0
+trait_query_mtf_heads: 4
+trait_query_mtf_residual: true
+trait_residual_scale_init: 1.0
+use_agreeableness_cl: true
+use_behavior_aware_cl: false
+use_behavior_state_token: false
+use_concat_mlp_baseline: true
+use_concat_tcms_lite: true
+use_egemaps_enhancer: false
+use_loss_auto_balance: false
+use_mcr: false
+use_modality_gating: false
+use_modality_token_dropout: false
+use_modality_token_fusion: false
+use_modality_token_layernorm: true
+use_mtpi: false
+use_pmtr: false
+use_pseudo_label_cl: false
+use_quality_aware_gating: false
+use_regression_aware_cl: false
+use_residual_prediction: true
+use_trait_aware_fusion: false
+use_trait_conditioned_modality_selection: false
+use_trait_modality_fusion: false
+use_trait_query_mtf: false
+use_trait_residual_scale: true
+use_trait_specific_heads: true
+version: 3.0.0-ablation-f-trait-interactive-no-kd-full
+train_max_samples: 5997
+valid_max_samples: 1999
+test_max_samples: 1999
+use_brst_lite: false
+lambda_cl: 0.0
+lambda_recovery: 0.0
+teacher_predictions_path: <REDACTED_LOCAL_PATH>
+kd_start_epoch: 0
+kd_warmup_epochs: 5
+kd_loss_type: smooth_l1
+kd_smooth_l1_beta: 1.0
+kd_on_clean_prediction_only: true
+use_prediction_kd: false
+lambda_prediction_kd: 0.0
+use_teacher_reliability_kd: false
+teacher_reliability_tau: 0.05
+use_depthwise_tcn: false
+use_relation_kd: false
+lambda_relation_kd: 0.0
+use_tcms_distillation: false
+teacher_trait_modality_importance_path: <REDACTED_LOCAL_PATH>
+lambda_tcms_distillation: 0.0
+tcms_distillation_start_epoch: 0
+tcms_distillation_warmup_epochs: 5
+tcms_distillation_confidence_weighted: true
+tcms_distillation_clean_only: true
+concat_tcms_interaction_rank: 8
+concat_tcms_interaction_scale_init: 0.1
+concat_tcms_interaction_dropout: 0.1
+db_config_path: <REDACTED_LOCAL_PATH>
+train_config_path: <REDACTED_LOCAL_PATH>
+config_path: <REDACTED_LOCAL_PATH>
+experiment_dir: <REDACTED_LOCAL_PATH>

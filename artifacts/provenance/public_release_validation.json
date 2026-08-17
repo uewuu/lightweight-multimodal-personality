@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "student_trainable_parameters": 500107,
+  "expected_student_trainable_parameters": 500107,
+  "prediction_artifacts_have_labels": false,
+  "teacher_npz_contains_targets": false,
+  "generic_joint_trainable_parameters": 500875,
+  "expected_generic_joint_trainable_parameters": 500875,
+  "generic_joint_prediction_has_labels": false,
+  "generic_joint_prediction_rows": 1999,
+  "generic_joint_unique_sample_ids": 1999,
+  "generic_joint_id_set_matches_F_export": true,
+  "generic_joint_alignment_exact_target_matrix_match": true,
+  "generic_joint_alignment_max_abs_target_difference": 0.0,
+  "release_type": "GitHub_Public_Release_v1.0",
+  "checkpoint_binaries_present": 0,
+  "checkpoints_intentionally_not_distributed": true,
+  "checkpoint_fingerprints_retained": true
+}

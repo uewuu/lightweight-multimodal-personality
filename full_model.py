@@ -33,7 +33,7 @@ class LinMulTBackbone(_LinMulTBase if _LinMulTBase is not None else nn.Module):
     def __init__(self, config: dict[str, Any]):
         if _LinMulTBase is None:
             raise ImportError(
-                "The Full model requires linmult==1.5.2. Install requirements.txt first."
+                "The Full model requires linmult>=1.5,<1.6. Install requirements.txt first."
             ) from _LINMULT_IMPORT_ERROR
         super().__init__(config)
 
@@ -676,7 +676,7 @@ def assert_full_parameter_count(model: nn.Module) -> int:
     if count != EXPECTED_FULL_TRAINABLE_PARAMETERS:
         raise ValueError(
             f"Full parameter mismatch: expected {EXPECTED_FULL_TRAINABLE_PARAMETERS:,}, got {count:,}. "
-            "Check linmult==1.5.2 and full_config.yaml."
+            "Check linmult>=1.5,<1.6 and full_config.yaml."
         )
     return count
 

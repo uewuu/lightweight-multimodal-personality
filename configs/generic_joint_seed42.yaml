@@ -1,5 +1,4 @@
 db_root: ./data/fi_features
-teacher_predictions_path: ./artifacts/teacher_predictions/full_teacher_train_predictions_seed42.npz
 feature_list:
 - dinov2_face
 - wavlm
@@ -13,8 +12,8 @@ input_feature_dim:
 train_max_samples: 5997
 valid_max_samples: 1999
 test_max_samples: 1999
-sample_seed: 42
 seed: 42
+sample_seed: 42
 concat_projection_dim: 96
 concat_hidden_dim: 384
 concat_dropout: 0.1
@@ -25,6 +24,7 @@ concat_tcms_lite_learnable_alpha: true
 concat_tcms_interaction_rank: 8
 concat_tcms_interaction_scale_init: 0.1
 concat_tcms_interaction_dropout: 0.1
+concat_tcms_interaction_mode: generic_concat_mlp
 trait_head_hidden_dim: 32
 trait_head_dropout: 0.1
 trait_head_use_sigmoid: false
@@ -37,42 +37,37 @@ label_mean:
 - 0.47617265582084656
 - 0.5482338070869446
 - 0.5203418135643005
+use_prediction_kd: false
+lambda_prediction_kd: 0.0
+use_agreeableness_cl: true
+lambda_agreeableness_cl: 0.05
 agreeableness_index: 3
+agreeableness_top_k: 3
+agreeableness_temperature: 0.2
+agreeableness_label_sigma: 0.08
 trait_loss_alpha_a: 1.5
 lambda_extreme: 0.05
 extreme_weight_strength: 1.0
 lambda_var: 0.005
-use_agreeableness_cl: true
-lambda_agreeableness_cl: 0.05
-agreeableness_top_k: 3
-agreeableness_temperature: 0.2
-agreeableness_label_sigma: 0.08
 cl_start_epoch: 5
 cl_warmup_epochs: 5
 adversarial_start_epoch: 10
 feat_eps: 0.005
 pretrain_epochs: 5
-use_prediction_kd: true
-lambda_prediction_kd: 0.2
-kd_start_epoch: 0
-kd_warmup_epochs: 5
-kd_smooth_l1_beta: 1.0
-kd_on_clean_prediction_only: true
 optimizer:
   base_lr: 0.0007
   weight_decay: 0.0
 n_epochs: 100
 batch_size: 8
 num_workers: 2
-pin_memory: true
 early_stopping:
   monitor: valid_r2
   patience: 20
   mode: max
+test_checkpoint_monitor: valid_racc
 accelerator: gpu
 devices:
 - 0
 float32_matmul_precision: medium
 output_dir: ./results
-run_name: trait_interactive_tcms_predkd
-concat_tcms_interaction_mode: multiplicative
+run_name: generic_joint_seed42_control

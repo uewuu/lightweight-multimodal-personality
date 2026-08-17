@@ -1,0 +1,51 @@
+{
+  "comparison": "Generic-Joint baseline -> F multiplicative candidate",
+  "iterations": 10000,
+  "seed": 42,
+  "samples": 1999,
+  "source_video_clusters": 1454,
+  "ci_method": "percentile 95%",
+  "pairing": "same resampled source-video cluster indices",
+  "metrics": {
+    "MAE_improvement_Generic_minus_F": {
+      "point": 0.00010991789934963747,
+      "bootstrap_mean": 0.00010809618355627789,
+      "ci95": [
+        -0.0005569496503624409,
+        0.0007721992445582759
+      ],
+      "p_bootstrap_gt_0": 0.6263,
+      "ci_excludes_0": false
+    },
+    "RACC_F_minus_Generic": {
+      "point": 0.0001099178993495542,
+      "bootstrap_mean": 0.00010809618355627911,
+      "ci95": [
+        -0.0005569496503623567,
+        0.0007721992445581661
+      ],
+      "p_bootstrap_gt_0": 0.6263,
+      "ci_excludes_0": false
+    },
+    "R2_F_minus_Generic": {
+      "point": 0.0017066673053005577,
+      "bootstrap_mean": 0.0016451115137987215,
+      "ci95": [
+        -0.005942891266043814,
+        0.009115879295880492
+      ],
+      "p_bootstrap_gt_0": 0.6651,
+      "ci_excludes_0": false
+    },
+    "PCC_F_minus_Generic": {
+      "point": 0.0018985967829322492,
+      "bootstrap_mean": 0.0018708473580869942,
+      "ci95": [
+        -0.0030836203326117554,
+        0.006731298760657486
+      ],
+      "p_bootstrap_gt_0": 0.7741,
+      "ci_excludes_0": false
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "label": "F",
+  "model_name": "ProjectedConcatMLP_TraitInteractiveTCMSLite_NoKD_Full_AblationF",
+  "seed": 42,
+  "parameter_count": 500107,
+  "checkpoint_selection": "checkpoint_valid_racc.ckpt",
+  "valid_samples": 1999,
+  "test_samples": 1999,
+  "source_sha256": "637a3365a320d1f1c24574cdbdc45cc1c794b30cf558c6ab71bd12e6cb162cc6",
+  "hparams_sha256": "ce27da6697e3f8b4425af1ea86c8dbf4ba068c8ed24719366dbe68e341fe8ae2",
+  "checkpoint_sha256": "d41315fd8b3297cc10822d599a3438dd7beab8ba27166cb20f4e0851254bb48a",
+  "valid_average": {
+    "mae": 0.08387245684862137,
+    "racc": 0.9161275431513787,
+    "r2": 0.4569411297013512,
+    "pcc": 0.6816258128919529,
+    "pooled_r2": 0.4898867170753892
+  },
+  "test_average": {
+    "mae": 0.08446760326623917,
+    "racc": 0.9155323967337609,
+    "r2": 0.4728601436367434,
+    "pcc": 0.6903584734993103,
+    "pooled_r2": 0.5017400712724094
+  }
+}

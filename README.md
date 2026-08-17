@@ -1,157 +1,213 @@
-# High-Capacity and Lightweight Multimodal Learning for Apparent Personality Recognition
+# Factorized Low-Rank Sample-Trait Conditioning for Compact Multimodal Fusion in Apparent Personality Regression
 
-Minimal public code release for the paper:
+GitHub Public Release v1.0 for the downstream **multimodal fusion-and-regression** experiments associated with the manuscript of the same title.
 
-**High-Capacity and Lightweight Multimodal Learning for Apparent Personality Recognition via Trait-Conditioned Routing and Distillation–Calibration**
+The released system assumes **pre-extracted** DINOv2-face, WavLM, RoBERTa, and eGeMAPS representations. The compactness and latency claims therefore apply to the downstream fusion/regression stack, not to an end-to-end sensing pipeline that includes the upstream encoders.
 
-This repository covers the downstream **fusion-and-regression stage** and assumes DINOv2-face, WavLM, RoBERTa, and eGeMAPS representations are pre-extracted.
+## Locked seed-42 endpoints
 
-## Included methods
+| Endpoint | Neural params | Avg. RACC | Avg. R² | Avg. PCC |
+|---|---:|---:|---:|---:|
+| Full Teacher | 5,476,680 | 0.916474 | 0.485587 | 0.697162 |
+| D-KD Raw Student | 500,107 | 0.916190 | 0.481810 | 0.695661 |
+| D-DCS | 500,107 | 0.916363 | 0.485638 | 0.695661 |
+| F: Trait-Interactive student, no KD/no calibration | 500,107 | 0.915532 | 0.472860 | 0.690358 |
+| Generic-Joint direct control, no KD/no calibration | 500,875 | 0.915422 | 0.471153 | 0.688460 |
 
-- **Full**: LinMulT -> Modality Token Fusion (MTF) with Behavior-Reliability Summary Token (BRST) -> trait-conditioned modality selection (TCMS) -> trait-specific residual regression. B-ARCL and Agreeableness-aware contrastive learning are training-only objectives.
-- **D-DCS**: mask-aware pooling -> 96-D modality projections -> Projected Concat+MLP -> Trait-Interactive TCMS-Lite -> trait-specific residual regression. Prediction KD is training-only; validation-fitted trait-wise affine calibration completes DCS.
+**Complete DCS** is one deployment strategy: Prediction KD is used during student training, then five trait-wise affine mappings are fitted on validation predictions only. DCS is not described here as a new distillation principle, and the calibration step is not treated as an independent new method.
 
-DCS uses `y'_t = clip(a_t * y_t + b_t, 0, 1)`, fitted independently for the five OCEAN traits on validation predictions only.
+## What is included
 
-## Paper results (seed 42)
+- public student/full model code and configurations;
+- checkpoint fingerprints (expected filenames, endpoint rules, parameter counts, and SHA-256 hashes) for Full, D-KD, F, and Generic-Joint; binary `.ckpt` files are intentionally not redistributed;
+- FI processed-split manifests (5997/1999/1999);
+- public-safe seed-42 prediction CSVs containing only `sample_id` and `pred_*` columns;
+- validation-fitted D-DCS coefficients and F-Cal diagnostic coefficients;
+- target-free teacher prediction NPZ for offline Prediction KD;
+- scripts for label preparation, evaluation, calibration, DCS application, source-video-cluster bootstrap, and release verification;
+- selected preprocessing scripts for the four final streams;
+- a cleaned reference environment snapshot.
 
-| System | Neural params | Fixed affine scalars | Avg. RACC | Avg. R² | Avg. PCC |
-|---|---:|---:|---:|---:|---:|
-| Full | 5,476,680 | 0 | 0.916474 | 0.485587 | 0.697162 |
-| Raw Student | 500,107 | 0 | 0.916190 | 0.481810 | 0.695661 |
-| D-DCS | 500,107 | 10 | 0.916363 | 0.485638 | 0.695661 |
+## What is intentionally NOT included
 
-Feature-level efficiency (RTX A4000, FP32; pre-extracted representations already on GPU):
+This release does **not** redistribute FI/FIv2 raw media, transcripts, annotations/ground-truth labels, processed feature caches, FI/FIv2-derived `.ckpt` binaries, or any prediction CSV containing `target_*` / `GroundTruth` columns. Users must obtain FI/FIv2 through the dataset's authorized access route and comply with its terms.
 
-| System | Batch-1 latency (ms) | Batch-8 throughput (samples/s) | Peak GPU memory, B=8 (MiB) |
-|---|---:|---:|---:|
-| Full | 92.285 ± 1.328 | 81.51 ± 0.66 | 245.964 |
-| Raw Student | 1.885 ± 0.098 | 4,254.93 ± 33.04 | 54.383 |
-| D-DCS | 1.952 ± 0.076 | 4,099.77 ± 84.82 | 54.384 |
+Checkpoint omission is a conservative redistribution choice rather than a claim that derived checkpoints are legally prohibited. The exact checkpoint fingerprints remain available in `checkpoints/README.md`.
 
-D-DCS therefore provides 10.95x neural compression and a 47.29x batch-1 feature-level speed-up relative to Full. Upstream feature extraction and data loading are excluded from this timing boundary.
+The processed cache used by the paper contains 5997 train, 1999 validation, and 1999 test clips. The exact historical preprocessing failure causes for the five clips absent from the finalized cache were not preserved in the archived logs. The exact included samples are specified by `artifacts/manifests/*.csv`.
 
-## Files
+## Important row-order note
+
+Do **not** infer prediction alignment from manifest row order. All released prediction files carry explicit `sample_id` values, and all evaluation/bootstrap scripts join by ID. During the release audit, the legacy Full and D-KD trait-separated exports were linked to IDs through a later unified F export whose five ground-truth vectors matched the legacy exports exactly row-by-row; the F sample-ID set also matched the released test manifest exactly. Ground-truth vectors used for that audit are not redistributed.
+
+## Repository layout
 
 ```text
 .
-├── README.md
-├── LICENSE
-├── requirements.txt
-├── fi.py
-├── model.py
-├── train.py
-├── config.yaml
-├── dcs.py
-├── calibration_parameters.json
-├── full_model.py
-├── full_config.yaml
-├── benchmark.py
-└── tools/
-    └── check_feature_helpers.py
+├── model.py / train.py / fi.py / config.yaml
+├── full_model.py / full_config.yaml
+├── dcs.py / benchmark.py
+├── checkpoints/  # fingerprint/usage README only; no binary weights
+├── configs/
+├── artifacts/
+│   ├── calibration/
+│   ├── manifests/
+│   ├── metrics/
+│   ├── predictions/
+│   ├── provenance/
+│   └── teacher_predictions/
+├── scripts/
+├── preprocessing/
+├── environment/
+├── provenance/
+├── FEATURE_EXTRACTION.md
+├── LICENSE_SCOPE.md
+├── RELEASE_AUDIT.md
+└── SHA256SUMS.txt
 ```
 
-## Installation
+## Environment
 
-Python 3.11 is recommended.
+Python 3.11 is recommended. A minimal environment can be installed with:
 
 ```bash
-python -m venv .venv
 pip install -r requirements.txt
 ```
 
-`linmult==1.5.2` is the external LinMulT dependency. `exordium` supplies the FI normalization/padding helpers. Install the PyTorch build appropriate for the local CUDA environment when using a GPU.
+`environment/` contains a broader **reference environment captured on 2026-08-16**. It is not claimed to be an exact frozen copy of every historical training-time package version.
 
 ## Data layout
 
-FIv2 and pre-extracted features are not redistributed. Expected layout:
+The public downstream loader expects split shards such as:
 
 ```text
-data/fi_features/
-├── cache/
-│   ├── split_train/*.pkl
-│   ├── split_valid/*.pkl
-│   └── split_test/*.pkl
-└── standardization/
-    └── egemaps_lld.npz
+data/fi_features/cache/split_train/*.pkl
+data/fi_features/cache/split_valid/*.pkl
+data/fi_features/cache/split_test/*.pkl
 ```
 
-Each sample contains `dinov2_face [T,384]`, `wavlm [T,768]`, `roberta [T,1024]`, `egemaps_lld [T,25]`, and `ocean [5]`. OpenGraphAU statistics are loaded only when OpenGraphAU is explicitly requested; they are not needed for the paper's four-stream configuration.
+Each processed sample must provide the four final streams with feature widths 384/768/1024/25 and a local five-dimensional OCEAN target for training/evaluation. See `FEATURE_EXTRACTION.md` and `preprocessing/README.md`.
 
-## Prediction KD
+## Checkpoint fingerprints and local evaluation
 
-Offline teacher predictions are an NPZ with `sample_ids` and `predictions` (`[N,5]`, O/C/E/A/N). The teacher is not used by the deployed student.
+Binary FI/FIv2-derived checkpoints are intentionally **not** redistributed in this public release. Exact SHA-256 fingerprints, expected filenames, endpoint-selection rules, and parameter counts are preserved in `checkpoints/README.md` and `artifacts/provenance/checkpoint_metadata.json`.
 
-## Train / evaluate the student
+If you hold a compatible checkpoint locally, evaluate the D-KD student with:
 
 ```bash
-python train.py --config config.yaml --db-root ./data/fi_features --teacher-predictions ./data/teacher_predictions/full_teacher_train_predictions.npz
+python train.py \
+  --config config.yaml \
+  --db-root ./data/fi_features \
+  --checkpoint /path/to/student_dkd_seed42_checkpoint_valid_racc.ckpt
 ```
 
-Evaluate an existing selected checkpoint:
+Equivalent local commands for F and Generic-Joint are documented in `checkpoints/README.md`. If no checkpoint is supplied, the public student training script can train from the corresponding configuration and an authorized local FI/FIv2 feature cache.
+
+The public `train.py` may export local validation/test CSVs containing targets because metrics are computed locally. Before sharing any export publicly, remove labels with:
 
 ```bash
-python train.py --config config.yaml --db-root ./data/fi_features --checkpoint ./checkpoints/checkpoint_valid_racc.ckpt
+python scripts/export_predictions.py \
+  --input ./results/trait_interactive_tcms_predkd/test_predictions.csv \
+  --output ./results/public_test_predictions.csv
 ```
 
-The selected-checkpoint evaluation writes both `valid_predictions.csv` and `test_predictions.csv`. Early stopping monitors validation R²; the reported final student uses the validation-RACC checkpoint.
-
-## D-DCS
-
-Apply the supplied fixed seed-42 parameters:
+## Prepare local labels from a lawfully obtained FI annotation pickle
 
 ```bash
-python dcs.py apply --input-csv raw_predictions.csv --parameters calibration_parameters.json --output-csv calibrated_predictions.csv
+python scripts/build_labels_from_fi_annotation.py \
+  --annotation /path/to/annotation_test.pkl \
+  --manifest artifacts/manifests/test_manifest.csv \
+  --output local_private/test_labels.csv
 ```
 
-Refit on a newly trained student's validation predictions:
+The generated label file is for local evaluation only and should not be committed to the public repository.
+
+## Recompute metrics from released prediction artifacts
 
 ```bash
-python dcs.py fit --valid-csv ./results/trait_interactive_tcms_predkd/valid_predictions.csv --test-csv ./results/trait_interactive_tcms_predkd/test_predictions.csv --output-dir dcs_results
+python scripts/evaluate_predictions.py \
+  --predictions artifacts/predictions/student_dkd_seed42_test_predictions.csv \
+  --labels local_private/test_labels.csv
 ```
 
-All affine parameters are fitted from validation only; test labels are not used for fitting.
+## Reproduce D-DCS
 
-## Full model
-
-`full_model.py` is the minimal public implementation of the locked Full path. Historical ablation branches and experiment-management plumbing are omitted. The LinMulT backbone remains an external dependency, while the hidden-state interface used by the formal Full run is included in `full_model.py`.
-
-Parameter check:
+Apply the released seed-42 coefficients:
 
 ```bash
-python -c "import yaml; from full_model import FullModel, assert_full_parameter_count; c=yaml.safe_load(open('full_config.yaml', encoding='utf-8')); m=FullModel(c); print(assert_full_parameter_count(m))"
+python scripts/reproduce_dcs.py \
+  --predictions artifacts/predictions/student_dkd_seed42_test_predictions.csv \
+  --parameters artifacts/calibration/dcs_seed42_parameters.json \
+  --output local_private/student_ddcs_test_predictions.csv
 ```
 
-Expected output: `5476680`.
-
-## Efficiency benchmark
-
-The benchmark measures Full, Raw Student, and D-DCS under the same feature-level timing boundary:
+Or refit the five affine mappings on locally regenerated validation predictions:
 
 ```bash
-python benchmark.py --config config.yaml --full-config full_config.yaml --checkpoint ./checkpoints/checkpoint_valid_racc.ckpt --full-checkpoint ./checkpoints/full_checkpoint_valid_r2.ckpt --calibration-parameters calibration_parameters.json --device cuda:0
+python scripts/fit_calibration.py \
+  --predictions local_private/student_dkd_valid_predictions.csv \
+  --labels local_private/valid_labels.csv \
+  --output local_private/refit_dcs_parameters.json
 ```
 
-If a checkpoint is omitted, that architecture uses deterministic random weights for a functional/timing smoke test only. CPU smoke test:
+The test labels are never used to fit calibration parameters.
+
+## Source-video-cluster bootstrap
 
 ```bash
-python benchmark.py --allow-cpu --warmup 2 --iterations 5 --repeats 1
+python scripts/reproduce_cluster_bootstrap.py \
+  --baseline artifacts/predictions/full_seed42_test_predictions.csv \
+  --candidate artifacts/predictions/student_ddcs_seed42_test_predictions.csv \
+  --labels local_private/test_labels.csv \
+  --manifest artifacts/manifests/test_manifest.csv \
+  --iterations 10000 --seed 42
 ```
 
-Default benchmark settings are batch sizes 1/8, 50 warm-up iterations, 200 timed iterations per repeat, and 3 repeats.
+The positive-improvement convention is baseline-minus-candidate for MAE and candidate-minus-baseline for RACC/R²/PCC. The paper interprets intervals that include zero conservatively; they are not equivalence tests. The locked reference output is included as `artifacts/metrics/full_vs_ddcs_source_video_cluster_bootstrap_seed42.json`.
 
-## Notes
 
-- Final student: **500,107** trainable neural parameters.
-- Full: **5,476,680** trainable neural parameters.
-- D-DCS adds **10 fixed non-trainable affine scalars**.
-- `calibration_parameters.json` contains the reported seed-42 validation-fitted parameters.
-- FIv2, pre-extracted features, checkpoints, and offline teacher prediction targets are not redistributed.
+## Direct structural control: Generic-Joint vs factorized multiplicative conditioning
+
+The release includes the formal seed-42 **Generic-Joint Conditioning (Concat+GELU)** control. It keeps the projected modality tokens, sample and trait factors, query/key/value routing, residual fusion, trait-specific heads, and training protocol aligned with F, while replacing the factorized Hadamard interaction with `GELU(concat(sample_factor, trait_factor))`. The public `model.py` exposes this through `concat_tcms_interaction_mode: generic_concat_mlp`; the matched control configuration is `configs/generic_joint_seed42.yaml`.
+
+| Conditioning | Params | Avg. RACC | Avg. R² | Avg. PCC |
+|---|---:|---:|---:|---:|
+| Generic-Joint (Concat+GELU) | 500,875 | 0.915422 | 0.471153 | 0.688460 |
+| F: factorized multiplicative | 500,107 | 0.915532 | 0.472860 | 0.690358 |
+
+The seed-42 point estimates favor F by +0.000110 RACC, +0.001707 R², and +0.001899 PCC. However, all paired source-video cluster-bootstrap 95% intervals include zero. This release therefore treats Generic-Joint as a direct structural control and does **not** claim statistically resolved superiority. The locked artifacts are `artifacts/metrics/direct_structural_control_seed42_metrics.json` and `artifacts/metrics/F_vs_generic_joint_source_video_cluster_bootstrap_seed42.json`.
+
+Recompute the paired bootstrap locally with authorized labels:
+
+```bash
+python scripts/reproduce_cluster_bootstrap.py \
+  --baseline artifacts/predictions/generic_joint_seed42_test_predictions.csv \
+  --candidate artifacts/predictions/ablation_F_seed42_test_predictions.csv \
+  --labels local_private/test_labels.csv \
+  --manifest artifacts/manifests/test_manifest.csv \
+  --iterations 10000 --seed 42
+```
+
+## F and the DCS 2×2 diagnostic
+
+`artifacts/metrics/dcs_2x2_attribution_seed42.json` contains F, F-Cal, D-KD, and D-DCS. The diagnostic supports the statement that Prediction KD and validation-only calibration both contribute, with complementary but partially overlapping gains. It does not support a synergy claim.
+
+## Verify the package
+
+```bash
+python scripts/verify_release.py
+```
+
+The verifier checks SHA-256 hashes, confirms that public prediction CSVs contain no target columns, confirms that the public teacher NPZ contains no ground-truth target array, confirms that no `.ckpt` binaries are present, and validates the 500,107-parameter multiplicative student and 500,875-parameter Generic-Joint control architectures.
+
+## License and third-party data
+
+The MIT license in this repository applies to the authors' released code/documentation. It does not grant rights to FI/FIv2, upstream pretrained models, or third-party dependencies. See `LICENSE_SCOPE.md`.
 
 ## Citation
 
-Citation information will be added after publication.
+The associated manuscript title is:
 
-## License
+**Factorized Low-Rank Sample-Trait Conditioning for Compact Multimodal Fusion in Apparent Personality Regression**
 
-MIT License. See `LICENSE`.
+A finalized `CITATION.cff` should be added only after the author list / publication metadata are confirmed; this public release does not invent those fields.

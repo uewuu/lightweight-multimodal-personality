@@ -1,0 +1,35 @@
+{
+  "fit_split": "validation",
+  "fit_samples": 1999,
+  "test_samples": 1999,
+  "method": "ordinary least squares, independently per trait",
+  "formula": "clip(a_t * raw_prediction_t + b_t, 0, 1)",
+  "clip_range": [
+    0.0,
+    1.0
+  ],
+  "parameters": {
+    "O": {
+      "slope_a": 0.8696460371098629,
+      "intercept_b": 0.07391946822369812
+    },
+    "C": {
+      "slope_a": 0.9092438470162678,
+      "intercept_b": 0.05118916844346031
+    },
+    "E": {
+      "slope_a": 0.8911599172562006,
+      "intercept_b": 0.055145364446269524
+    },
+    "A": {
+      "slope_a": 0.815892390113156,
+      "intercept_b": 0.10824621601596517
+    },
+    "N": {
+      "slope_a": 0.8815742753091523,
+      "intercept_b": 0.06523121853378662
+    }
+  },
+  "test_labels_used_for_parameter_fitting": false,
+  "role": "F-Cal cell of the DCS 2x2 attribution diagnostic; not the complete D-DCS parameters."
+}

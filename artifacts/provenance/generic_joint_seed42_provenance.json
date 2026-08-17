@@ -1,0 +1,35 @@
+{
+  "model_name": "ProjectedConcatMLP_GenericJointTCMSLite_NoDCS_Full",
+  "formal_run": "results/FI/20260816-112144",
+  "checkpoint_sha256": "ecac4d7ede8f9c78e28be3dc2349d81f4a19b849653f7dfcca81e79c77716cce",
+  "train_source_sha256": "8ab81ef940d06572bde687c3246a48790f714e9e3cb3077d1ddaa083fcb3633a",
+  "formal_hparams_sha256": "40308c34280efa1daca860a74ba2f2d03b0116bd67f41a1f2f8bb45a7e5953a8",
+  "checkpoint_epoch_index": 63,
+  "checkpoint_global_step": 48000,
+  "pytorch_lightning_version": "2.6.0",
+  "seed": 42,
+  "sample_seed": 42,
+  "interaction_mode": "generic_concat_mlp",
+  "interaction_rank": 8,
+  "prediction_kd": false,
+  "calibration": false,
+  "tcms_distillation": false,
+  "test_checkpoint_monitor": "valid_racc",
+  "train_valid_test": [
+    5997,
+    1999,
+    1999
+  ],
+  "parameter_count": 500875,
+  "alignment_audit": {
+    "method": "The five legacy Generic-Joint GroundTruth vectors were compared row-by-row with the formal F unified export before assigning the F export sample_id sequence. Public artifacts retain no GroundTruth values.",
+    "rows": 1999,
+    "traits": 5,
+    "ground_truth_values_compared": 9995,
+    "max_abs_target_difference_vs_formal_F_export": 0.0,
+    "exact_alignment_pass": true,
+    "source_video_clusters": 1454
+  },
+  "expected_checkpoint_filename": "generic_joint_seed42_checkpoint_valid_racc.ckpt",
+  "checkpoint_distributed_in_public_release": false
+}

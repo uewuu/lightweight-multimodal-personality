@@ -1,0 +1,34 @@
+{
+  "test_manifest_rows": 1999,
+  "F_unified_export_rows": 1999,
+  "sample_id_set_equal_to_manifest": true,
+  "sample_id_sequence_equal_to_manifest": false,
+  "note_on_sequence": "Sequence equality is intentionally not required. Public evaluation joins on sample_id.",
+  "legacy_rowwise_groundtruth_match_against_F_unified_export": {
+    "full": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "student_dkd": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "ablation_F_original_auto_test": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "conclusion": "The unified F export supplies the IDs for the legacy trait-separated Full/D-KD exports. All five target vectors matched exactly rowwise during the private audit; targets are not redistributed.",
+  "valid_F_export_rows": 1999,
+  "valid_sample_id_set_equal_to_manifest": true,
+  "valid_sample_id_sequence_equal_to_manifest": false
+}

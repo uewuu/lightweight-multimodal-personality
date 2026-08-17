@@ -1,0 +1,11 @@
+Reference environment captured on 2026-08-16 (not claimed as the exact historical training environment)
+
+Python: 3.11.14
+Conda: 24.9.2
+PyTorch: 2.5.1+cu118
+Lightning: 2.6.0
+CUDA runtime reported by PyTorch: 11.8
+cuDNN: 90100
+GPU: NVIDIA RTX A4000
+GPU memory: 16376 MiB
+NVIDIA driver: 522.06

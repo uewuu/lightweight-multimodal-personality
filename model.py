@@ -25,6 +25,7 @@ TRAITS = ("O", "C", "E", "A", "N")
 DEFAULT_FEATURES = ("dinov2_face", "wavlm", "roberta", "egemaps_lld")
 DEFAULT_INPUT_DIMS = (384, 768, 1024, 25)
 EXPECTED_TRAINABLE_PARAMETERS = 500_107
+EXPECTED_GENERIC_JOINT_PARAMETERS = 500_875
 
 
 class ProjectedConcatMLPFusion(nn.Module):
@@ -148,6 +149,7 @@ class TraitInteractiveTCMSLite(nn.Module):
         interaction_rank: int = 8,
         interaction_scale_init: float = 0.1,
         interaction_dropout: float = 0.1,
+        interaction_mode: str = "multiplicative",
     ) -> None:
         super().__init__()
         self.token_dim = int(token_dim)
@@ -156,6 +158,11 @@ class TraitInteractiveTCMSLite(nn.Module):
         self.n_modalities = int(n_modalities)
         self.learnable_alpha = bool(learnable_alpha)
         self.interaction_rank = int(interaction_rank)
+        self.interaction_mode = str(interaction_mode).strip().lower()
+        if self.interaction_mode not in {"multiplicative", "generic_concat_mlp"}:
+            raise ValueError(
+                "interaction_mode must be 'multiplicative' or 'generic_concat_mlp'"
+            )
 
         if self.token_dim <= 0 or self.output_dim <= 0:
             raise ValueError("token_dim and output_dim must be positive")
@@ -181,8 +188,13 @@ class TraitInteractiveTCMSLite(nn.Module):
         self.trait_factor = nn.Linear(
             self.token_dim, self.interaction_rank, bias=False
         )
+        interaction_width = (
+            self.interaction_rank
+            if self.interaction_mode == "multiplicative"
+            else 2 * self.interaction_rank
+        )
         self.interaction_to_query = nn.Linear(
-            self.interaction_rank, self.token_dim, bias=False
+            interaction_width, self.token_dim, bias=False
         )
         self.interaction_dropout = nn.Dropout(float(interaction_dropout))
 
@@ -248,7 +260,14 @@ class TraitInteractiveTCMSLite(nn.Module):
             self.sample_factor(self.global_norm(global_hidden))
         )
         trait_factor = torch.tanh(self.trait_factor(self.trait_embeddings))
-        interaction = sample_factor.unsqueeze(1) * trait_factor.unsqueeze(0)
+        if self.interaction_mode == "multiplicative":
+            interaction = sample_factor.unsqueeze(1) * trait_factor.unsqueeze(0)
+        else:
+            sample_expanded = sample_factor.unsqueeze(1).expand(-1, self.n_traits, -1)
+            trait_expanded = trait_factor.unsqueeze(0).expand(batch_size, -1, -1)
+            interaction = torch.nn.functional.gelu(
+                torch.cat([sample_expanded, trait_expanded], dim=-1)
+            )
         interaction = self.interaction_dropout(interaction)
         query_delta = self.interaction_to_query(interaction)
 
@@ -371,6 +390,9 @@ class FinalStudent(nn.Module):
                     cfg.get("concat_tcms_lite_dropout", 0.1),
                 )
             ),
+            interaction_mode=str(
+                cfg.get("concat_tcms_interaction_mode", "multiplicative")
+            ),
         )
         self.trait_heads = TraitSpecificRegressionHead(
             input_dim=hidden_dim,
@@ -439,9 +461,15 @@ def count_trainable_parameters(model: nn.Module) -> int:
 
 def assert_parameter_count(model: nn.Module) -> int:
     count = count_trainable_parameters(model)
-    if count != EXPECTED_TRAINABLE_PARAMETERS:
+    mode = getattr(getattr(model, "concat_tcms_lite", None), "interaction_mode", "multiplicative")
+    expected = (
+        EXPECTED_GENERIC_JOINT_PARAMETERS
+        if mode == "generic_concat_mlp"
+        else EXPECTED_TRAINABLE_PARAMETERS
+    )
+    if count != expected:
         raise AssertionError(
-            f"Expected {EXPECTED_TRAINABLE_PARAMETERS:,} trainable parameters, "
+            f"Expected {expected:,} trainable parameters for interaction_mode={mode}, "
             f"got {count:,}"
         )
     return count

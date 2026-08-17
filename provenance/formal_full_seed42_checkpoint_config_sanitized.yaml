@@ -1,0 +1,165 @@
+db_root: <REDACTED_LOCAL_PATH>
+feature_list:
+- dinov2_face
+- wavlm
+- roberta
+- egemaps_lld
+model_name: LinMulT
+version: 1.5.2
+input_feature_dim:
+- 384
+- 768
+- 1024
+- 25
+output_dim:
+- 5
+d_model: 32
+n_heads: 8
+n_layers: 5
+attention_type: linear
+dropout_qkv: 0.0
+dropout_relu: 0.2
+dropout_residual: 0.2
+dropout_input: 0.0
+time_dim_reducer: gap
+ffn_fusion: true
+dropout_output: 0.2
+batch_size: 8
+num_workers: 4
+output_dir: results/FI
+seed: 42
+sample_seed: 42
+accelerator: gpu
+devices:
+- 0
+float32_matmul_precision: medium
+tasks:
+  app:
+    type: regression
+    loss_fn: bell_l2_l1_loss
+    metrics:
+    - racc
+    - r2
+n_epochs: 100
+pretrain_epochs: 5
+use_modality_gating: false
+use_quality_aware_gating: false
+use_pseudo_label_cl: false
+enable_recovery: false
+use_loss_auto_balance: false
+use_modality_token_fusion: true
+modality_token_fusion_layers: 1
+modality_token_fusion_heads: 4
+modality_token_fusion_dropout: 0.1
+modality_token_fusion_ffn_ratio: 2.0
+modality_token_fusion_residual: false
+use_modality_token_dropout: false
+use_modality_token_layernorm: true
+use_trait_conditioned_modality_selection: true
+tcms_dropout: 0.1
+tcms_use_global_context: true
+use_behavior_state_token: true
+behavior_state_hidden_ratio: 1.0
+behavior_state_dropout: 0.1
+behavior_state_use_stats: true
+behavior_state_gate: true
+behavior_state_gate_alpha: 0.2
+use_trait_query_mtf: false
+trait_query_mtf_heads: 4
+trait_query_mtf_dropout: 0.1
+trait_query_mtf_ffn_ratio: 2.0
+trait_query_mtf_residual: true
+use_pmtr: false
+use_trait_modality_fusion: false
+use_mtpi: false
+use_mcr: false
+use_egemaps_enhancer: false
+pmtr_layers: 1
+pmtr_heads: 4
+pmtr_dropout: 0.1
+pmtr_ffn_ratio: 2.0
+pmtr_gate: true
+feat_eps: 0.005
+use_regression_aware_cl: false
+lambda_regression_cl: 0.0
+lambda_regression_cl_recovery: 0.01
+regression_cl_top_k: 3
+regression_cl_temperature: 0.2
+regression_cl_label_sigma: 0.08
+regression_cl_use_clean_adv_pair: true
+regression_cl_trait_weights:
+- 1.0
+- 1.1
+- 1.0
+- 1.5
+- 1.2
+use_behavior_aware_cl: true
+lambda_behavior_aware_cl: 0.03
+lambda_behavior_aware_cl_recovery: 0.01
+behavior_cl_top_k: 3
+behavior_cl_temperature: 0.2
+behavior_cl_label_sigma: 0.08
+behavior_cl_behavior_sigma: 0.5
+behavior_cl_behavior_weight_alpha: 0.5
+behavior_cl_use_clean_adv_pair: true
+behavior_cl_replace_regression_cl: true
+use_agreeableness_cl: true
+lambda_agreeableness_cl: 0.05
+lambda_agreeableness_cl_recovery: 0.02
+agreeableness_index: 3
+agreeableness_top_k: 3
+agreeableness_temperature: 0.2
+agreeableness_label_sigma: 0.08
+agree_cl_use_clean_adv_pair: false
+use_trait_specific_heads: true
+trait_loss_alpha_a: 1.5
+trait_head_hidden_dim: 32
+trait_head_dropout: 0.1
+trait_head_use_sigmoid: false
+use_residual_prediction: true
+use_trait_residual_scale: true
+trait_residual_scale_init: 1.0
+label_mean:
+- 0.5663275718688965
+- 0.5227726697921753
+- 0.47617265582084656
+- 0.5482338070869446
+- 0.5203418135643005
+use_trait_aware_fusion: false
+trait_fusion_hidden_dim: 128
+trait_fusion_dropout: 0.1
+lambda_var: 0.005
+extreme_weight_strength: 1.0
+lambda_extreme: 0.05
+lambda_agree_extreme: 0.0
+agree_extreme_weight_strength: 2.0
+lambda_agree_var: 0.0
+lambda_agree_rank: 0.0
+agree_rank_margin: 0.02
+agree_rank_min_delta: 0.03
+cl_start_epoch: 5
+cl_warmup_epochs: 5
+adversarial_start_epoch: 10
+optimizer:
+  name: adam
+  base_lr: 0.0007
+  weight_decay: 0.0
+lr_scheduler:
+  name: OneCycleLR
+early_stopping:
+  monitor: valid_r2
+  patience: 20
+  mode: max
+checkpoints:
+- name: checkpoint_valid_loss
+  monitor: valid_loss
+  mode: min
+- name: checkpoint_valid_racc
+  monitor: valid_racc
+  mode: max
+- name: checkpoint_valid_r2
+  monitor: valid_r2
+  mode: max
+test_checkpoint_monitor: valid_r2
+experiment_dir: <REDACTED_LOCAL_PATH>
+trait_head_input_dim: 384
